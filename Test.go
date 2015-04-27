@@ -36,7 +36,6 @@ func main() {
 	PWM1.SetDUTY(250000)
 	PWM1.SetCNT(0)
 	PWM1.Start()
-
 	time.Sleep(time.Second * 5)
 	fmt.Println(PWM1.GetCNT())
 	PWM1.Stop()
