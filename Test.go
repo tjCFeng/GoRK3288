@@ -13,6 +13,8 @@ import (
 )
 
 func main() {
+	defer RK3288.FreeRK3288()
+		
 	P8A1 := RK3288.CreateGPIO(RK3288.P8, RK3288.A1)
 	P8A1.Flip()
 	fmt.Println(P8A1.GetLevel())
@@ -40,6 +42,4 @@ func main() {
 	fmt.Println(PWM1.GetCNT())
 	PWM1.Stop()
 	RK3288.FreePWM(PWM1)
-
-	defer RK3288.FreeRK3288()
 }
