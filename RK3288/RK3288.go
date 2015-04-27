@@ -24,6 +24,7 @@ func IRK3288() (*RK3288) {
 }
 
 func FreeRK3288() {
+	FreeGRF(IGRF())
 	iRK3288.hFile.Close()
 }
 
@@ -46,7 +47,7 @@ func (this *RK3288) FreeMMap(hMem []uint8) {
 	syscall.Munmap(hMem)
 }
 
-func (this *RK3288) Register(hMem []uint8, offset int32) (*uint32, bool) {
+func (this *RK3288) Register(hMem []uint8, offset uint32) (*uint32, bool) {
 	if hMem == nil {
 		return nil, false
 	}
