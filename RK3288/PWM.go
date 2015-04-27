@@ -12,7 +12,8 @@ import (
 
 const (PWM_0, PWM_1, PWM_2, PWM_3, PWM_4 = 0, 1, 2, 3, 4)
 const (OneShot, Continuous, Capture = 0, 1, 2)
-const (Left, Center = 0, 1)
+const (AlignedLeft, AlignedCenter = 0, 1)
+const (Negative, Positive = 0, 1)
 
 const BasePWM = 0xFF680000
 
@@ -27,13 +28,16 @@ type PWM struct {
 }
 
 func CreatePWM(PWMx uint8) *PWM {
+	var offset uint32
+
 	pwm := &PWM{pwmX: PWMx}
-	
-	pwm.hMem, _ = IRK3288().GetMMap(BasePWM + int64(pwm.pwmX) * 0x10)
-	pwm.PWM_CNT, _ = IRK3288().Register(pwm.hMem, 0x0000)
-	pwm.PWM_PERIOD, _ = IRK3288().Register(pwm.hMem, 0x0004)
-	pwm.PWM_DUTY, _ = IRK3288().Register(pwm.hMem, 0x0008)
-	pwm.PWM_CTRL, _ = IRK3288().Register(pwm.hMem, 0x000C)
+	offset = uint32(PWMx * 0x10)
+
+	pwm.hMem, _ = IRK3288().GetMMap(BasePWM)
+	pwm.PWM_CNT, _ = IRK3288().Register(pwm.hMem, 0x0000 + offset)
+	pwm.PWM_PERIOD, _ = IRK3288().Register(pwm.hMem, 0x0004 + offset)
+	pwm.PWM_DUTY, _ = IRK3288().Register(pwm.hMem, 0x0008 + offset)
+	pwm.PWM_CTRL, _ = IRK3288().Register(pwm.hMem, 0x000C + offset)
 	
 	switch pwm.pwmX {
 		case PWM_0:	IGRF().IOMUX_PWM(PWM0_IOMUX)
@@ -42,6 +46,8 @@ func CreatePWM(PWMx uint8) *PWM {
 		case PWM_3:	IGRF().IOMUX_PWM(PWM3_IOMUX)
 		//case PWM_4:	IGRF().IOMUX_PWM(PWM4_IOMUX)
 	}
+	
+	*pwm.PWM_CTRL = (0x7 << 12) + (0x1 << 1)
 	
 	return pwm
 }
@@ -76,6 +82,27 @@ func (this *PWM) SetPERIOD(period uint32) {
 
 func (this *PWM) SetDUTY(duty uint32) {
 	*this.PWM_DUTY = duty
+}
+
+func (this *PWM) SetOutputMode(mode uint8) {
+	switch mode {
+		case 0: *this.PWM_CTRL &^= (0x1 << 5)
+		default: *this.PWM_CTRL |= (0x1 << 5)
+	}
+}
+
+func (this *PWM) SetInactivePolarity(polarity uint8) {
+	switch polarity {
+		case 0: *this.PWM_CTRL &^= (0x1 << 4)
+		default: *this.PWM_CTRL |= (0x1 << 4)
+	}
+}
+
+func (this *PWM) SetDutyPolarity(polarity uint8) {
+	switch polarity {
+		case 0: *this.PWM_CTRL &^= (0x1 << 3)
+		default: *this.PWM_CTRL |= (0x1 << 3)
+	}
 }
 
 func (this *PWM) Start() {
