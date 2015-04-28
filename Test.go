@@ -42,4 +42,9 @@ func main() {
 	fmt.Println(PWM1.GetCNT())
 	PWM1.Stop()
 	RK3288.FreePWM(PWM1)
+	
+	Data :=RK3288.ITSADC().GetData(RK3288.TSADC_1)
+	fmt.Println(Data)
+	fmt.Println(RK3288.ITSADC().GetTemperature(Data))
+	RK3288.FreeTSADC()
 }
