@@ -14,8 +14,8 @@ import (
 
 func main() {
 	defer RK3288.FreeRK3288()
-		
-	P8A1 := RK3288.CreateGPIO(RK3288.P8, RK3288.A1)
+	
+	/*P8A1 := RK3288.CreateGPIO(RK3288.P8, RK3288.A1)
 	P8A1.Flip()
 	fmt.Println(P8A1.GetLevel())
 	RK3288.FreeGPIO(P8A1)
@@ -38,13 +38,21 @@ func main() {
 	PWM1.SetDUTY(250000)
 	PWM1.SetCNT(0)
 	PWM1.Start()
+
 	time.Sleep(time.Second * 5)
 	fmt.Println(PWM1.GetCNT())
 	PWM1.Stop()
-	RK3288.FreePWM(PWM1)
-	
-	Data :=RK3288.ITSADC().GetData(RK3288.TSADC_1)
+	RK3288.FreePWM(PWM1)*/
+
+	/*Data :=RK3288.ITSADC().GetData(RK3288.TSADC_1)
 	fmt.Println(Data)
 	fmt.Println(RK3288.ITSADC().GetTemperature(Data))
-	RK3288.FreeTSADC()
+	RK3288.FreeTSADC()*/
+	
+	WD := RK3288.IWDT()
+	WD.FeedSecond = 10
+	WD.Start()
+	time.Sleep(time.Second * 60)
+	WD.Stop() //一旦启动不能被关闭，此句无效
+	RK3288.FreeWDT()
 }
