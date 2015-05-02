@@ -16,7 +16,7 @@ var iWDT *WDT = nil
 
 func IWDT() (*WDT) {
 	if (iWDT == nil) {
-		iWDT = &WDT{hMem: nil, running:false, FeedSecond:3}
+		iWDT = &WDT{running:false, FeedSecond:3}
 		iWDT.hMem, _ = IRK3288().GetMMap(BaseWDT)
 		
 		iWDT.CR, _ = IRK3288().Register(iWDT.hMem, 0x0000)
