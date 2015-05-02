@@ -24,8 +24,8 @@ func IRK3288() (*RK3288) {
 }
 
 func FreeRK3288() {
-	FreeGRF(IGRF())
-	iRK3288.hFile.Close()
+	FreeGRF()
+	if iRK3288 != nil { iRK3288.hFile.Close()	}
 }
 
 /*****************************************************************************/
@@ -40,7 +40,7 @@ func (this *RK3288) GetMMap(PhysicalAddr int64) ([]uint8, bool) {
 	}
 
 	mem, err := syscall.Mmap(int(this.hFile.Fd()), PhysicalAddr, os.Getpagesize(), syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
-	return mem, (err != nil)
+	return mem, (err == nil)
 }
 
 func (this *RK3288) FreeMMap(hMem []uint8) {
