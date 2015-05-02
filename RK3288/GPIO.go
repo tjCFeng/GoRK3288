@@ -45,10 +45,15 @@ type GPIOGROUP struct {
 	FLS_SYNC		*uint32
 }
 
-func CreateGPIOGROUP(Port uint8) *GPIOGROUP {
-	gpiogroup := &GPIOGROUP{port: Port}
+func CreateGPIOGROUP(Port uint8) (*GPIOGROUP, bool) {
+	var Result bool = false
 	
-	gpiogroup.hMem, _ = IRK3288().GetMMap(BaseGPIO + int64(gpiogroup.port) * 0x10000)
+	if Port > P8 { return nil, Result}
+	
+	gpiogroup := &GPIOGROUP{port: Port}
+	gpiogroup.hMem, Result = IRK3288().GetMMap(BaseGPIO + int64(gpiogroup.port) * 0x10000)
+	if !Result { return nil, Result}
+	
 	gpiogroup.SWPORT_DR, _ = IRK3288().Register(gpiogroup.hMem, 0x0000)
 	gpiogroup.SWPORT_DDR, _ = IRK3288().Register(gpiogroup.hMem, 0x0004)
 	gpiogroup.INTEN, _ = IRK3288().Register(gpiogroup.hMem, 0x0030)
@@ -62,7 +67,7 @@ func CreateGPIOGROUP(Port uint8) *GPIOGROUP {
 	gpiogroup.EXT_PORT, _ = IRK3288().Register(gpiogroup.hMem, 0x0050)
 	gpiogroup.FLS_SYNC, _ = IRK3288().Register(gpiogroup.hMem, 0x0060)
 
-	return gpiogroup
+	return gpiogroup, Result
 }
 
 func FreeGPIOGROUP(gpiogroup *GPIOGROUP) {
@@ -76,22 +81,28 @@ type GPIO struct {
 	bit				uint32
 }
 
-func CreateGPIO(Port uint8, Pin uint8)  *GPIO {
+func CreateGPIO(Port uint8, Pin uint8)  (*GPIO, bool) {
+	var Result bool = false
+	
+	if Pin > D7 { return nil, Result}
+	
 	gpio := &GPIO{}
-	gpio.port = CreateGPIOGROUP(Port)
+	gpio.port, Result = CreateGPIOGROUP(Port)
+	if !Result { return nil, Result}
+	
 	gpio.pin = Pin
 	gpio.bit = (0x1 << gpio.pin)
 	
 	IGRF().IOMUX_GPIO(Port, Pin)
 
-	return gpio
+	return gpio, Result
 }
 
 func FreeGPIO(gpio *GPIO) {
 	FreeGPIOGROUP(gpio.port)
 }
 
-func (this *GPIO) GetLevel() bool {
+func (this *GPIO) GetData() bool {
 	return (*this.port.SWPORT_DR & this.bit) == this.bit
 }
 
@@ -99,10 +110,10 @@ func (this *GPIO) Flip() {
 	*this.port.SWPORT_DR ^= (0x1 << this.pin)
 }
 
-func (this *GPIO) SetLevel(level bool) {
-	switch level {
-		case true: *this.port.SWPORT_DR |= (0x1 << this.pin)
-		case false: *this.port.SWPORT_DR &^= (0x1 << this.pin)
+func (this *GPIO) SetDatal(data bool) {
+	switch data {
+		case true: *this.port.SWPORT_DR |=this.bit
+		case false: *this.port.SWPORT_DR &^= this.bit
 	}
 }
 
@@ -120,19 +131,20 @@ func (this *GPIO) SetE(e uint8) {
 
 func (this *GPIO) SetDir(dir bool) {
 	switch dir {
-		case true: *this.port.SWPORT_DDR |= (0x1 << this.pin)
-		case false: *this.port.SWPORT_DDR &^= (0x1 << this.pin)
+		case true: *this.port.SWPORT_DDR |= this.bit
+		case false: *this.port.SWPORT_DDR &^= this.bit
 	}
 }
 
 func (this *GPIO) SetDebounce(deb bool) {
 	switch deb {
-		case true: *this.port.DEBOUNCE |= (0x1 << this.pin)
-		case false: *this.port.DEBOUNCE &^= (0x1 << this.pin)
+		case true: *this.port.DEBOUNCE |= this.bit
+		case false: *this.port.DEBOUNCE &^= this.bit
 	}
 }
 
 func (this *GPIO) GetInputValue() bool {
 	return (*this.port.EXT_PORT & this.bit) == this.bit
 }
+
 
