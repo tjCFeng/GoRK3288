@@ -16,9 +16,9 @@ const BaseTSADC = 0xFF280000
 
 var iTSADC *TSADC = nil
 
-func ITSADC() (*TSADC) {
+func ITSADC() *TSADC {
 	if (iTSADC == nil) {
-		iTSADC = &TSADC{hMem: nil}
+		iTSADC = &TSADC{}
 		iTSADC.bit = (0x1 << 12)
 		iTSADC.hMem, _ = IRK3288().GetMMap(BaseTSADC)
 		
