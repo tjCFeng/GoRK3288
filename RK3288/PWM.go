@@ -27,13 +27,17 @@ type PWM struct {
 	PWM_CTRL	*uint32
 }
 
-func CreatePWM(PWMx uint8) *PWM {
+func CreatePWM(PWMx uint8) (*PWM, bool) {
+	var Result bool = false
 	var offset uint32
 
+	if PWMx > PWM_4 { return nil, Result}
 	pwm := &PWM{pwmX: PWMx}
 	offset = uint32(PWMx * 0x10)
 
-	pwm.hMem, _ = IRK3288().GetMMap(BasePWM)
+	pwm.hMem, Result = IRK3288().GetMMap(BasePWM)
+	if !Result { return nil, Result}
+	
 	pwm.PWM_CNT, _ = IRK3288().Register(pwm.hMem, 0x0000 + offset)
 	pwm.PWM_PERIOD, _ = IRK3288().Register(pwm.hMem, 0x0004 + offset)
 	pwm.PWM_DUTY, _ = IRK3288().Register(pwm.hMem, 0x0008 + offset)
@@ -49,7 +53,7 @@ func CreatePWM(PWMx uint8) *PWM {
 	
 	*pwm.PWM_CTRL = (0x7 << 12) + (0x1 << 1)
 	
-	return pwm
+	return pwm, Result
 }
 
 func FreePWM(pwm *PWM) {
@@ -112,3 +116,4 @@ func (this *PWM) Start() {
 func (this *PWM) Stop() {
 	*this.PWM_CTRL &^= 0x1
 }
+
