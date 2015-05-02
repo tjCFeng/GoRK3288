@@ -55,7 +55,7 @@ type WDT struct {
 func (this *WDT) Start() {
 	this.running = true
 	*this.CR |= 0x1
-	this.Reset()
+	this.FeedWD()
 }
 
 func (this *WDT) Stop() { //一旦启动不能被关闭
@@ -63,7 +63,7 @@ func (this *WDT) Stop() { //一旦启动不能被关闭
 	this.running = false
 }
 
-func (this *WDT) Reset() {
+func (this *WDT) FeedWD() {
 	go func() {
 		for {
 			*this.CRR = 0x76
@@ -71,4 +71,8 @@ func (this *WDT) Reset() {
 			time.Sleep(time.Second * time.Duration(this.FeedSecond))
 	}
 	}()
+}
+
+func (this *WDT) Reset() {
+	*this.CR = 0x1
 }
