@@ -14,9 +14,9 @@ const BaseGRF = 0xFF770000
 
 var iGRF *GRF = nil
 
-func IGRF() (*GRF) {
+func IGRF() *GRF {
 	if (iGRF == nil) {
-		iGRF = &GRF{hMem: nil}
+		iGRF = &GRF{}
 		iGRF.hMem, _ = IRK3288().GetMMap(BaseGRF)
 		
 		iGRF.GPIO1D_IOMUX, _ = IRK3288().Register(iGRF.hMem, 0x000C)
@@ -110,8 +110,10 @@ func IGRF() (*GRF) {
 	return iGRF
 }
 
-func FreeGRF(grf *GRF) {
-	IRK3288().FreeMMap(grf.hMem)
+func FreeGRF() {
+	if iGRF != nil {
+		IRK3288().FreeMMap(iGRF.hMem)
+	}
 }
 
 /*****************************************************************************/
@@ -329,4 +331,5 @@ func (this *GRF) E_GPIO(Port uint8, Pin uint8, e uint8) {
 		default:	return
 	}
 }
+
 
