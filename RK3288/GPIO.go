@@ -110,7 +110,7 @@ func (this *GPIO) Flip() {
 	*this.port.SWPORT_DR ^= (0x1 << this.pin)
 }
 
-func (this *GPIO) SetDatal(data bool) {
+func (this *GPIO) SetData(data bool) {
 	switch data {
 		case true: *this.port.SWPORT_DR |=this.bit
 		case false: *this.port.SWPORT_DR &^= this.bit
