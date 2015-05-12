@@ -42,8 +42,6 @@ func ITSADC() *TSADC {
 		iTSADC.HIGHT_TSHUT_DEBOUNCE, _ = IRK3288().Register(iTSADC.hMem, 0x0064)
 		iTSADC.AUTO_PERIOD, _ = IRK3288().Register(iTSADC.hMem, 0x0068)
 		iTSADC.AUTO_PERIOD_HT, _ = IRK3288().Register(iTSADC.hMem, 0x006C)
-		
-		*iTSADC.USER_CON = (0x3F << 6) + (0x1 << 3)
 	}
 
 	return iTSADC
@@ -81,29 +79,22 @@ type TSADC struct {
 	AUTO_PERIOD_HT			*uint32
 }
 
-func (this *TSADC) GetData(channel uint8) uint32 {
+func (this *TSADC) GetData() (uint32, uint32, uint32, uint32) {
 	Converted := make(chan uint8)
-	
-	*iTSADC.USER_CON &^= (0x7 << 0)
-	*iTSADC.USER_CON |= uint32(channel << 0)
-	*iTSADC.USER_CON |= (0x1 << 5)
+
+	*iTSADC.USER_CON = (0x1 << 5) + (0x1 << 3) + (0x7 << 0)
 
 	go func() {
 		for {
-			if (*this.USER_CON & this.bit == 0) {break}	
+			if (*this.USER_CON & this.bit != this.bit) {break}	
 		}
 		Converted <- 1
 	}()
 	
 	<-Converted
+	*this.INT_PD = 0xF
 
-	switch channel {
-		case TSADC_0: return *this.DATA0
-		case TSADC_1: return *this.DATA1
-		case TSADC_2: return *this.DATA2
-		case TSADC_3: return *this.DATA3
-		default: return 0
-	}
+	return *this.DATA0 & 0xFFF, *this.DATA1 & 0xFFF, *this.DATA2 & 0xFFF, *this.DATA3 & 0xFFF
 }
 
 var DataTable = []uint32{
@@ -120,11 +111,11 @@ func (this *TSADC) GetTemperature(data uint32) float32 {
 
 	var I = 0
 	for I = 0; I < len(DataTable); I++ {
-		if data >= DataTable[I] {break}
+		if (data <= DataTable[I]) && (data > DataTable[I + 1]) { break }
 	}
 
-	Temp := 5 / float32(DataTable[I - 1] - DataTable[I])
-	Temp *= float32(data - DataTable[I])
+	Temp := float32(DataTable[I] - data) * 5
+	Temp /= float32(DataTable[I] - DataTable[I + 1])
 	Temp += float32(-40 + I * 5)
 	
 	return Temp
