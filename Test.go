@@ -48,7 +48,7 @@ func main() {
 	RK3288.FreePWM(PWM1)
 
 	//所有的单例没有创建是否成功的返回值，直接使用
-	Data :=RK3288.ITSADC().GetData(RK3288.TSADC_1)
+	_, Data, _, _ := RK3288.ITSADC().GetData()
 	fmt.Println(Data)
 	fmt.Println(RK3288.ITSADC().GetTemperature(Data))
 	RK3288.FreeTSADC()
