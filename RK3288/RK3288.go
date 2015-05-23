@@ -25,6 +25,7 @@ func IRK3288() (*RK3288) {
 
 func FreeRK3288() {
 	FreeGRF()
+	FreeCRU()
 	if iRK3288 != nil { iRK3288.hFile.Close()	}
 }
 
