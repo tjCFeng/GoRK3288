@@ -62,4 +62,5 @@ func main() {
 		WD.Stop() //一旦启动不能被关闭，所以此句无效
 		RK3288.FreeWDT()
 	}
+	
 }
