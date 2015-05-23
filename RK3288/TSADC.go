@@ -43,6 +43,10 @@ func ITSADC() *TSADC {
 		iTSADC.AUTO_PERIOD, _ = IRK3288().Register(iTSADC.hMem, 0x0068)
 		iTSADC.AUTO_PERIOD_HT, _ = IRK3288().Register(iTSADC.hMem, 0x006C)
 	}
+	
+	div := (32000 / 1000) & 0x3F
+	*ICRU().CLKSEL[2] &^= uint32(0x3F)
+	*ICRU().CLKSEL[2] = uint32(div - 1)
 
 	return iTSADC
 }
